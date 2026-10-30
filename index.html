@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测测你是哪种社交动物？</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f7f9fc;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        h2 { color: #ff5252; margin-top: 0; }
+        .question-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; }
+        .option {
+            display: block;
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fff;
+            text-align: left;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        .option:hover {
+            background-color: #fff0f0;
+            border-color: #ff5252;
+        }
+        .hidden { display: none; }
+        .btn {
+            background-color: #ff5252;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .btn:hover { background-color: #e04141; }
+    </style>
+</head>
+<body>
+
+    <div class="card" id="welcome-screen">
+        <h2>🦊 测完坐不住了！原来我是个护理🦊？</h2>
+        <p>全网超准的动物社交人格测试，快来花 1 分钟找出你的本命动物吧！</p>
+        <button class="btn" onclick="startTest()">开始测试</button>
+    </div>
+
+    <div class="card hidden" id="quiz-screen">
+        <div id="question-container"></div>
+    </div>
+
+    <div class="card hidden" id="result-screen">
+        <h2>🎉 你的测试结果揭晓！</h2>
+        <div id="result-content" style="font-size: 18px; line-height: 1.6; margin-bottom: 20px;"></div>
+        <button class="btn" onclick="location.reload()">再测一次</button>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                title: "Q1：周末难得有一天完全属于你自己，你最想怎么度过？",
+                options: [
+                    { text: "A. 宅在家里拉上窗帘，刷剧打游戏，谁也不理。", type: "A" },
+                    { text: "B. 约上两三个最铁的朋友，去安静的咖啡馆或露营。", type: "B" },
+                    { text: "C. 独自背上相机去人多热闹的街区闲逛、压马路。", type: "C" },
+                    { text: "D. 安排满满的日程，健身、看展、社交两不误。", type: "D" }
+                ]
+            },
+            {
+                title: "Q2：在社交场合中，如果不小心成为了全场的焦点，你的第一反应是？",
+                options: [
+                    { text: "A. 脚趾抠地，只想找个隐蔽的角落偷偷溜走。", type: "A" },
+                    { text: "B. 表面云淡风轻，内心其实慌得一批，赶紧找借口撤退。", type: "B" },
+                    { text: "C. 既来之则安之，甚至还能幽默地接梗活跃气氛。", type: "C" },
+                    { text: "D. 游刃有余，享受掌控全场和备受瞩目的感觉。", type: "D" }
+                ]
+            },
+            {
+                title: "Q3：当你的好朋友遇到了烦心事，找你疯狂吐槽时，你通常会扮演什么角色？",
+                options: [
+                    { text: "A. 默默陪在旁边递纸巾，听TA倾诉，给一个大大的抱抱。", type: "A" },
+                    { text: "B. 先帮TA冷静下来，然后理智分析利弊，给出最优解。", type: "B" },
+                    { text: "C. 跟TA一起疯狂大骂对方，无条件站在朋友这一边。", type: "C" },
+                    { text: "D. 带TA去吃大餐或者疯狂玩乐，用快乐转移注意力。", type: "D" }
+                ]
+            },
+            {
+                title: "Q4：面对生活中突如其来的计划打乱，你的状态是？",
+                options: [
+                    { text: "A. 瞬间情绪崩溃，需要缓好久才能接受现实。", type: "A" },
+                    { text: "B. 叹口气，然后迅速在手机上查好备选方案。", type: "B" },
+                    { text: "C. 随遇而安，“船到桥头自然直”，换个地方玩也挺好。", type: "C" },
+                    { text: "D. 兴奋！觉得充满未知和挑战，甚至比原计划更有趣。", type: "D" }
+                ]
+            },
+            {
+                title: "Q5：对于工作、学习或者感兴趣的事物，你的执行风格更接近哪一种？",
+                options: [
+                    { text: "A. 只要我不尴尬，尴尬的就是别人（摸鱼大师，主打一个心态稳）。", type: "A" },
+                    { text: "B. 目标明确，不到最后绝不罢休，是个隐藏的卷王。", type: "B" },
+                    { text: "C. 凭感觉和灵感做事，灵感一来势不可挡，没灵感就疯狂躺平。", type: "C" },
+                    { text: "D. 喜欢团队协作，擅长统筹全局，把每个人安排得明明白白。", type: "D" }
+                ]
+            },
+            {
+                title: "Q6：你在处理人际关系时的边界感是怎样的？",
+                options: [
+                    { text: "A. 社交电量极低，需要经常开启“请勿打扰”模式。", type: "A" },
+                    { text: "B. 表面朋友一大堆，但真正走入内心的人屈指可数。", type: "B" },
+                    { text: "C. 随性自然，合得来就多聊两句，合不来就相忘于江湖。", type: "C" },
+                    { text: "D. 人缘极好，走到哪都能迅速和大家打成一片。", type: "D" }
+                ]
+            },
+            {
+                title: "Q7：如果用一种天气来形容你内心的安全感来源，你觉得是？",
+                options: [
+                    { text: "A. 连绵的雨天，窝在被窝里听雨声，最安全。", type: "A" },
+                    { text: "B. 晴朗的夜晚，头顶有繁星和微风，清爽又明朗。", type: "B" },
+                    { text: "C. 偶尔有阵风的阴天，自由自在，没有束缚。", type: "C" },
+                    { text: "D. 灿烂的艳阳天，万物充满生机，感觉未来可期。", type: "D" }
+                ]
+            }
+        ];
+
+        let currentQuestion = 0;
+        let answers = { A: 0, B: 0, C: 0, D: 0 };
+
+        function startTest() {
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = questions[currentQuestion];
+            let html = `<div class="question-title">${q.title}</div>`;
+            q.options.forEach(opt => {
+                html += `<button class="option" onclick="selectOption('${opt.type}')">${opt.text}</button>`;
+            });
+            document.getElementById('question-container').innerHTML = html;
+        }
+
+        function selectOption(type) {
+            answers[type]++;
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            let maxType = 'A';
+            let maxCount = -1;
+            for (let key in answers) {
+                if (answers[key] > maxCount) {
+                    maxCount = answers[key];
+                    maxType = key;
+                }
+            }
+
+            const resultsMap = {
+                A: "🐱 <b>【猫咪系人格】</b><br>高冷孤傲、内心戏超多。表面冷淡，其实极其护短。社交电量用完即走，需要独处充电。",
+                B: "🦉 <b>【猫头鹰/雪豹系人格】</b><br>理性独立、深夜哲学家。习惯在深夜思考人生，逻辑满分，拥有高质量的孤独和强大的气场。",
+                C: "🦊 <b>【狐狸系人格】</b><br>高智商、自带神秘感。心思细腻，观察力敏锐，总能一眼看穿别人的小心思，偶尔有点小腹黑又极具吸引力！",
+                D: "🐶 <b>【小狗/海豚系人格】</b><br>元气满满、社交悍匪。看到喜欢的人会摇尾巴，情绪价值给足，在任何场合都能如鱼得水，团队里的开心果。"
+            };
+
+            document.getElementById('result-content').innerHTML = resultsMap[maxType] || resultsMap['C'];
+        }
+    </script>
+
+</body>
+</html>
